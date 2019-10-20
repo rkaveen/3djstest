@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>three.js css3d - periodic table</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			a {
+				color: #8ff;
+			}
+
+			#menu {
+				position: absolute;
+				bottom: 20px;
+				width: 100%;
+				text-align: center;
+			}
+
+			.element {
+				width: 120px;
+				height: 160px;
+				box-shadow: 0px 0px 12px rgba(0,255,255,0.5);
+				border: 1px solid rgba(127,255,255,0.25);
+				font-family: Helvetica, sans-serif;
+				text-align: center;
+				line-height: normal;
+				cursor: default;
+			}
+
+			.element:hover {
+				box-shadow: 0px 0px 12px rgba(0,255,255,0.75);
+				border: 1px solid rgba(127,255,255,0.75);
+			}
+
+				.element .number {
+					position: absolute;
+					top: 20px;
+					right: 20px;
+					font-size: 12px;
+					color: rgba(127,255,255,0.75);
+				}
+
+				.element .symbol {
+					position: absolute;
+					top: 40px;
+					left: 0px;
+					right: 0px;
+					font-size: 60px;
+					font-weight: bold;
+					color: rgba(255,255,255,0.75);
+					text-shadow: 0 0 10px rgba(0,255,255,0.95);
+				}
+
+				.element .details {
+					position: absolute;
+					bottom: 15px;
+					left: 0px;
+					right: 0px;
+					font-size: 12px;
+					color: rgba(127,255,255,0.75);
+				}
+
+			button {
+				color: rgba(127,255,255,0.75);
+				background: transparent;
+				outline: 1px solid rgba(127,255,255,0.75);
+				border: 0px;
+				padding: 5px 10px;
+				cursor: pointer;
+			}
+
+			button:hover {
+				background-color: rgba(0,255,255,0.5);
+			}
+
+			button:active {
+				color: #000000;
+				background-color: rgba(0,255,255,0.75);
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> css3d - periodic table. <a href="https://plus.google.com/113862800338869870683/posts/QcFk5HrWran" target="_blank" rel="noopener">info</a>.</div>
+		<div id="container"></div>
+		<div id="menu">
+			<button id="table">TABLE</button>
+			<button id="sphere">SPHERE</button>
+			<button id="helix">HELIX</button>
+			<button id="grid">GRID</button>
+			<button id="pyramid">PYRAMID</button>
+		</div>
+
+		<script type="module">
+
+			import * as THREE from '../build/three.module.js';
+
+			import { TWEEN } from './jsm/libs/tween.module.min.js';
+			import { TrackballControls } from './jsm/controls/TrackballControls.js';
+			import { CSS3DRenderer, CSS3DObject } from './jsm/renderers/CSS3DRenderer.js';
+
+			var table = [
+				"M", "Mark", "25", 1, 1,
+				"M", "Mahmood", "29", 18, 1,
+				"M", "Lee", "25", 1, 2,
+				"F", "Shahira", "25", 2, 2,
+				"F", "Isabelle", "24", 13, 2,
+				"M", "Arvin", "25", 14, 2,
+				"M", "David", "25", 15, 2,
+				"F", "Amylea", "24", 16, 2,
+				"M", "Mahesh", "25", 17, 2,
+				"M", "Iswar", "25", 18, 2,
+				"F", "Julianne", "25...", 1, 3,
+				"M", "Kevin", "24", 2, 3,
+				"F", "Deyna", "25", 13, 3,
+				"F", "See Yun", "25", 14, 3,
+				"M", "Yuki", "24", 15, 3,
+				"M", "Krishen", "25", 16, 3,
+				"M", "Anandh", "24", 17, 3,
+				"F", "Nikika", "24", 18, 3,
+				"M", "Kavilan", "25", 1, 4,
+				"M", "Karthi", "25", 2, 4,
+				"M", "Jack", "31", 3, 4,
+				"F", "Jojo", "25", 4, 4,
+				"F", "Vivasheni", "25", 5, 4,
+				"F", "Christie", "24", 6, 4,
+				"M", "Manfred", "27", 7, 4,
+				"F", "Irene", "26", 8, 4,
+				"F", "Jackie", "24", 9, 4,
+				"M", "Yuva", "24", 10, 4,
+				"M", "Rama", "62", 11, 4,
+				"F", "Yoko", "55", 12, 4,
+				"M", "John", "40", 13, 4,
+				"M", "Paul", "72", 14, 4,
+				"M", "George", "60", 15, 4,
+				"M", "Ringo", "66", 16, 4,
+				"F", "Divya", "25", 17, 4,
+				"M", "Clark", "32", 18, 4,
+				"M", "Vicknes", "25", 1, 5,
+				"F", "Malathi", "26", 2, 5,
+				"M", "Ramesh", "27", 3, 5,
+				"M", "Felix", "29", 4, 5,
+				"M", "Ahmad", "23", 5, 5,
+				"M", "Mohammad", "26", 6, 5,
+				"M", "Haziq", "29", 7, 5,
+				"F", "Hira", "25", 8, 5,
+				"F", "Rani", "41", 9, 5,
+				"F", "Adelyn", "26", 10, 5,
+				"F", "Shalini", "25", 11, 5,
+				"M", "Aaron", "30", 12, 5,
+				"M", "Abel", "26", 13, 5,
+				"M", "Adrian", "27", 14, 5,
+				"M", "Anthony", "29", 15, 5,
+				"M", "Amirul", "27", 16, 5,
+				"F", "Amirah", "26", 17, 5,
+				"M", "Amit", "25", 18, 5,
+				"M", "Cassius", "45", 1, 6,
+				"F", "Lana", "23", 2, 6,
+				"M", "Barene", "25", 4, 9,
+				"M", "Chris", "25", 5, 9,
+				"M", "Cooper", "33", 6, 9,
+				"F", "Becky", "24", 7, 9,
+				"F", "Elaine", "25", 8, 9,
+				"M", "Akib", "26", 9, 9,
+				"M", "Muthanna", "32", 10, 9,
+				"M", "Ericson", "25", 11, 9,
+				"M", "Eswaran", "25", 12, 9,
+				"F", "Eva", "24", 13, 9,
+				"M", "Gregory", "26", 14, 9,
+				"M", "Hendra", "25", 15, 9,
+				"M", "Ibrahim", "24", 16, 9,
+				"F", "Jessie", "23", 17, 9,
+				"M", "Luke", "21", 18, 9,
+				"M", "Hafiz", "29", 4, 6,
+				"F", "Erdee", "24", 5, 6,
+				"M", "Michael", "30", 6, 6,
+				"M", "Austin", "44", 7, 6,
+				"F", "Liz", "32", 8, 6,
+				"F", "Pamela", "35", 9, 6,
+				"M", "Tyson", "43", 10, 6,
+				"F", "Shahmina", "23", 11, 6,
+				"M", "Richard", "33", 12, 6,
+				"M", "Jimmy", "33", 13, 6,
+				"F", "Stella", "27", 14, 6,
+				"F", "Chloe", "25", 15, 6,
+				"M", "Scott", "33", 16, 6,
+				"M", "Rick", "34", 17, 6,
+				"F", "Marie", "22", 18, 6,
+				"M", "Francis", "23", 1, 7,
+				"F", "Radha", "26", 2, 7,
+				"F", "Nandini", "22", 4, 10,
+				"M", "Christopher", "23", 5, 10,
+				"M", "Tyler", "28", 6, 10,
+				"F", "Nicole", "35", 7, 10,
+				"F", "Aileen", "31", 8, 10,
+				"M", "Rengasamy", "44", 9, 10,
+				"M", "Kuneswaran", "25", 10, 10,
+				"F", "Nirmala", "54", 11, 10,
+				"F", "Nayanthara", "25", 12, 10,
+				"M", "Andre", "25", 13, 10,
+				"M", "Albert", "42", 14, 10,
+				"F", "Jessica", "25", 15, 10,
+				"M", "Madhavan", "25", 16, 10,
+				"M", "Alfred", "42", 17, 10,
+				"M", "Lawrence", "26", 18, 10,
+				"M", "David", "26", 4, 7,
+				"M", "Roger", "26", 5, 7,
+				"M", "Nick", "27", 6, 7,
+				"M", "Richard", "27", 7, 7,
+				"M", "Syd", "27", 8, 7,
+				"F", "Nageshwary", "26", 9, 7,
+				"F", "Stephanie", "25", 10, 7,
+				"M", "Qiyao", "28", 11, 7,
+				"M", "Joseph", "25", 12, 7,
+				"M", "Tobe", "26", 13, 7,
+				"F", "Vanya", "28", 14, 7,
+				"M", "Alex", "29", 15, 7,
+				"F", "Debbie", "23", 16, 7,
+				"F", "Hilda", "29", 17, 7,
+				"M", "Iqmal", "24", 18, 7
+			];
+
+			var camera, scene, renderer;
+			var controls;
+
+			var objects = [];
+			var targets = { table: [], sphere: [], helix: [], grid: [], pyramid: [] };
+
+			init();
+			animate();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 3000;
+
+				scene = new THREE.Scene();
+
+				// table
+
+				for ( var i = 0; i < table.length; i += 5 ) {
+
+					var element = document.createElement( 'div' );
+					element.className = 'element';
+					if (table[ i ]=='F'){
+
+							element.style.backgroundColor = 'rgba(255,192,203,' + ( Math.random() * 0.5 + 0.25 ) + ')';
+							element.style.boxShadow = '0px 0px 12px rgba(255,20,147,0.5)';
+							element.style.border = '1px solid rgba(255,105,180,0.25)';
+
+					}else {
+							element.style.backgroundColor = 'rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')';
+					}
+
+
+					//element.style.backgroundColor = 'rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')';
+
+					var number = document.createElement( 'div' );
+					number.className = 'number';
+					number.textContent = ( i / 5 ) + 1;
+					if (table[i]=='F'){ 	number.style.color = 'rgba(255,182,193,0.75)';}
+					element.appendChild( number );
+
+					var symbol = document.createElement( 'div' );
+					symbol.className = 'symbol';
+					symbol.textContent = table[ i ];
+						if (table[i]=='F'){symbol.style.textShadow = '0 0 10px rgba(255,20,147,0.95)';}
+					element.appendChild( symbol );
+
+					var details = document.createElement( 'div' );
+					details.className = 'details';
+					details.innerHTML = table[ i + 1 ] + '<br>' + table[ i + 2 ];
+						if (table[i]=='F'){details.style.color = 'rgba(255,105,180,0.95)';}
+					element.appendChild( details );
+
+					var object = new CSS3DObject( element );
+					object.position.x = Math.random() * 4000 - 2000;
+					object.position.y = Math.random() * 4000 - 2000;
+					object.position.z = Math.random() * 4000 - 2000;
+					scene.add( object );
+
+					objects.push( object );
+
+					//
+
+					var object = new THREE.Object3D();
+					object.position.x = ( table[ i + 3 ] * 140 ) - 1330;
+					object.position.y = - ( table[ i + 4 ] * 180 ) + 990;
+
+					targets.table.push( object );
+
+				}
+
+				// sphere
+
+				var vector = new THREE.Vector3();
+
+				for ( var i = 0, l = objects.length; i < l; i ++ ) {
+
+					var phi = Math.acos( - 1 + ( 2 * i ) / l );
+					var theta = Math.sqrt( l * Math.PI ) * phi;
+
+					var object = new THREE.Object3D();
+
+					object.position.setFromSphericalCoords( 800, phi, theta );
+
+					vector.copy( object.position ).multiplyScalar( 2 );
+
+					object.lookAt( vector );
+
+					targets.sphere.push( object );
+
+				}
+
+				// helix
+
+				var vector = new THREE.Vector3();
+
+				for ( var i = 0, l = objects.length; i < l; i ++ ) {
+
+					var theta = i * 0.175 + Math.PI;
+					var y = - ( i * 8 ) + 450;
+
+					var object = new THREE.Object3D();
+
+					object.position.setFromCylindricalCoords( 900, theta, y );
+
+					vector.x = object.position.x * 2;
+					vector.y = object.position.y;
+					vector.z = object.position.z * 2;
+
+					object.lookAt( vector );
+
+					targets.helix.push( object );
+
+				}
+
+				// grid
+
+
+
+				// pyramid
+				/*var vector = new THREE.Vector3();
+
+				for ( var i = 0, l = objects.length; i < l; i ++ ) {
+
+
+					var theta = i * 0.175 + Math.PI;
+					var y = - ( i * 8 ) + 450;
+
+					var object = new THREE.Object3D();
+
+					object.position.setFromCylindricalCoords( 900, theta, y );
+
+
+				  vector.x = object.position.x * 100 ;
+				  vector.y = object.position.y * 200;
+				  vector.z = object.position.z * 100;
+
+
+				 // object.lookAt( vector );
+
+				  targets.pyramid.push( object );
+
+				}*/
+
+				var vector = new THREE.Vector3();
+				for (var i = 0, l = objects.length; i < l; i ++ ) {
+							 var object = new THREE.Object3D();
+
+										 if (i == 0){
+											 // 1
+											 object.position.x = 0;
+											 object.position.y = 0;
+											 object.position.z = 0;
+											// object.rotation.x = THREE.Math.degToRad( -25 );
+
+										 }
+										 else if (i < 2){
+											 //2
+											 object.position.x = 75;
+											 object.position.y = 0;
+											 object.position.z = -75;
+											object.rotation.y = THREE.Math.degToRad( 90 );
+										 }
+										 else if (i < 3){
+											 //3
+											 object.position.x = 0;
+											 object.position.y = 0;
+											 object.position.z = -150;
+										object.rotation.y = THREE.Math.degToRad( 180 );
+										 }
+										 else if (i < 4){
+											 //4
+											object.position.x = -75;
+											object.position.y = 0;
+											object.position.z = -75;
+										 object.rotation.y = THREE.Math.degToRad( 270 );
+										}
+										 else if (i < 7){
+
+											 object.position.x =  -750 + (i*150); //300
+											 object.position.y = -175;
+											 object.position.z = 175 ;
+										 }
+										 else if (i < 10){
+
+											 object.position.x = 225;
+											 object.position.y = -175;
+											 object.position.z = (-1275 + i*150); //225
+											  object.rotation.y = THREE.Math.degToRad( 90);
+										 }
+										 else if (i < 13){
+											 object.position.x =  -1650 + (i*150); // 300
+											 object.position.y = -175;
+											 object.position.z = -325 ;
+											 object.rotation.y = THREE.Math.degToRad(180);
+										 }
+										 else if (i < 16){
+											 object.position.x = -225;
+										 	object.position.y = -175;
+										 	object.position.z = (-2175 + i*150);
+										 	 object.rotation.y = THREE.Math.degToRad( 270);
+
+										 }
+										 else if (i<21){
+											 object.position.x =  -2700 + (i*150); //=300
+											 object.position.y = -350; //-150
+											 object.position.z = 325;
+
+										 }
+										 else if (i < 26){
+											 object.position.x = 375;
+											 object.position.y = -350;
+											 object.position.z = (-3525 + i*150); //375
+												object.rotation.y = THREE.Math.degToRad( 90);
+
+										 }
+										 else if (i<31){
+											 object.position.x =  -4200 + (i*150); //300
+											 object.position.y = -350; //-150
+											 object.position.z = -475;
+										   object.rotation.y = THREE.Math.degToRad(180);
+										 }
+										 else if (i < 36){
+											 object.position.x = -375;
+											 object.position.y = -350;
+											 object.position.z = (-5025 + i*150); //375
+												object.rotation.y = THREE.Math.degToRad(270);
+
+										 }
+										 else if (i < 43){
+
+											 object.position.x =  -5850 + (i*150); //300
+											 object.position.y = -525;
+											 object.position.z = 500; ;
+										 }
+										 else if (i < 50){
+											 object.position.x =  525; //300
+ 											object.position.y = -525;
+ 											object.position.z = -6950 + (i*150);
+											object.rotation.y = THREE.Math.degToRad( 90);
+										 }
+										 else if (i < 57){
+											 object.position.x =  -7950 + (i*150); //300
+											 object.position.y = -525;
+											 object.position.z = -600 ;
+											object.rotation.y = THREE.Math.degToRad( 180);
+										 }
+										 else if (i < 64){
+											 object.position.x = -525; //300
+ 											object.position.y = -525;
+		 									object.position.z = (-9055 + i*150); //375
+		 									 object.rotation.y = THREE.Math.degToRad(270);
+										 }
+										 else if (i <73){
+											object.position.x =  -10200 + (i*150); //300
+ 											object.position.y = -700;
+ 											object.position.z = 650;
+										 }
+										 else if (i <82){
+										 object.position.x =  675;
+											 object.position.y = -700;
+											 object.position.z = -11600 + (i*150);
+											 object.rotation.y = THREE.Math.degToRad( 90);
+										}
+										else if (i < 91){
+											object.position.x =  -12900 + (i*150); //300
+											object.position.y = -700;
+											object.position.z = -750 ;
+										 object.rotation.y = THREE.Math.degToRad( 180);
+										}
+										else if (i < 100){
+											object.position.x = -675; //300
+										 object.position.y = -700;
+										 object.position.z = (-14305 + i*150); //375
+											object.rotation.y = THREE.Math.degToRad(270);
+										}
+										else if (i < 109){
+											object.position.x =  -15600 + (i*150); //300
+ 											object.position.y = -788;
+ 											object.position.z = 575;
+											object.rotation.x = THREE.Math.degToRad(90);
+										}
+										 else{
+											 object.position.x =  -16950 + (i*150); //300
+										 	object.position.y = -788;
+										 	object.position.z = -675 ;
+										  object.rotation.y = THREE.Math.degToRad( 180);
+											object.rotation.x = THREE.Math.degToRad(90);
+										 }
+
+
+						 vector.x = object.position.x; //* 4;
+							 vector.y = object.position.y; // * 2;
+							 vector.z = object.position.z; // * 0;
+
+
+									 //object.lookAt( vector );
+
+									                    //             1  x  1
+									                  //             3  x x x 4
+									                 //          5    x x x x x 9
+									                //         7    x x x x x x x 16
+									              //           9  x x x x x x x x x 25
+
+										 targets.pyramid.push( object );
+									 }
+
+
+
+
+
+
+				//
+
+				renderer = new CSS3DRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.getElementById( 'container' ).appendChild( renderer.domElement );
+
+				//
+
+				controls = new TrackballControls( camera, renderer.domElement );
+				controls.minDistance = 500;
+				controls.maxDistance = 6000;
+				controls.addEventListener( 'change', render );
+
+				var button = document.getElementById( 'table' );
+				button.addEventListener( 'click', function () {
+
+					transform( targets.table, 2000 );
+
+				}, false );
+
+				var button = document.getElementById( 'sphere' );
+				button.addEventListener( 'click', function () {
+
+					transform( targets.sphere, 2000 );
+
+				}, false );
+
+				var button = document.getElementById( 'helix' );
+				button.addEventListener( 'click', function () {
+
+					transform( targets.helix, 2000 );
+
+				}, false );
+
+				var button = document.getElementById( 'grid' );
+				button.addEventListener( 'click', function () {
+
+					transform( targets.grid, 2000 );
+
+				}, false );
+
+				transform( targets.table, 2000 );
+
+				var button = document.getElementById( 'pyramid' );
+				button.addEventListener( 'click', function () {
+
+					transform( targets.pyramid, 2000 );
+
+				}, false );
+
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function transform( targets, duration ) {
+
+				TWEEN.removeAll();
+
+				for ( var i = 0; i < objects.length; i ++ ) {
+
+					var object = objects[ i ];
+					var target = targets[ i ];
+
+					new TWEEN.Tween( object.position )
+						.to( { x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration )
+						.easing( TWEEN.Easing.Exponential.InOut )
+						.start();
+
+					new TWEEN.Tween( object.rotation )
+						.to( { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration )
+						.easing( TWEEN.Easing.Exponential.InOut )
+						.start();
+
+				}
+
+				new TWEEN.Tween( this )
+					.to( {}, duration * 2 )
+					.onUpdate( render )
+					.start();
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				render();
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				TWEEN.update();
+
+				controls.update();
+
+			}
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+	</body>
+</html>
